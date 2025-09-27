@@ -23,7 +23,10 @@ const allowedOrigins = [
   "http://localhost:3000"
 ];
 
-if (cluster.isPrimary) {
+// Check if running on Vercel (serverless environment)
+const isVercel = process.env.VERCEL === '1';
+
+if (!isVercel && cluster.isPrimary) {
   console.log(`Primary process ${process.pid} is running`);
 
   for (let i = 0; i < numCPUs; i++) {
@@ -36,6 +39,7 @@ if (cluster.isPrimary) {
   });
 
 } else {
+  // This runs either on Vercel (serverless) or as a worker process in local clustering
   const app = express();
 
   const corsOptions = {
@@ -90,8 +94,15 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-
-  app.listen(3000, () => {
-    console.log(`Worker ${process.pid} started and listening on port 3000`);
-  });
+  // Use port 3000 for local development, or let Vercel handle the port
+  const port = process.env.PORT || 3000;
+  
+  if (!isVercel) {
+    app.listen(port, () => {
+      console.log(`Worker ${process.pid} started and listening on port ${port}`);
+    });
+  }
+  
+  // For Vercel serverless functions
+  module.exports = app;
 }
