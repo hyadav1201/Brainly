@@ -19,6 +19,8 @@ const numCPUs = os.cpus().length;
 // Allowed origins
 const allowedOrigins = [
   "https://brainly-seven-iota.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000"
 ];
 
 if (cluster.isPrimary) {
@@ -56,6 +58,9 @@ if (cluster.isPrimary) {
 // Apply CORS **before all routes**
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // Enable preflight for all routes
+
+// Add express.json() middleware
+app.use(express.json());
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
