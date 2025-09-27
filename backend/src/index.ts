@@ -19,9 +19,6 @@ const numCPUs = os.cpus().length;
 // Allowed origins
 const allowedOrigins = [
   "https://brainly-seven-iota.vercel.app",
-  "https://brainly-juji731xc-bytewizard12s-projects.vercel.app",
-  "http://localhost:5173",
-  "http://localhost:3000"
 ];
 
 if (cluster.isPrimary) {
@@ -77,7 +74,7 @@ if (cluster.isPrimary) {
   app.post("/api/v1/brain/share", userMiddleware, PostShareBrain);
   app.get("/api/v1/brain/:shareLink", GetShareBrain);
 
-  
+
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err.message === "Not allowed by CORS") {
     res.status(403).json({ error: "CORS blocked", origin: req.headers.origin });
