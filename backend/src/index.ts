@@ -16,7 +16,7 @@ const numCPUs = os.cpus().length;
 
 if (cluster.isPrimary) {
     console.log(`Primary process ${process.pid} is running`);
-    // Fork workers.
+    // Fork workers
     for (let i = 0; i < numCPUs; i++) {
         cluster.fork();
     }
@@ -27,31 +27,34 @@ if (cluster.isPrimary) {
 } else {
     const app = express();
     app.use(express.json());
+
+    const allowedOrigins = [
+        "https://brainly-seven-iota.vercel.app",
+        "https://brainly-juji731xc-bytewizard12s-projects.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000"
+    ];
+
+    // ✅ CORS with OPTIONS preflight support
     app.use(
         cors({
             origin: (origin, callback) => {
-                // Allow requests with no origin (mobile apps, postman, etc.)
-                if (!origin) return callback(null, true);
-                
-                // List of allowed origins
-                const allowedOrigins = [
-                    "https://brainly-seven-iota.vercel.app",
-                    "https://brainly-juji731xc-bytewizard12s-projects.vercel.app",
-                    "http://localhost:5173",
-                    "http://localhost:3000"
-                ];
-                
-                // Check if origin is in allowed list or is a vercel.app subdomain
-                if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+                if (!origin) return callback(null, true); // allow mobile apps, Postman, etc.
+
+                if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
                     callback(null, true);
                 } else {
-                    callback(new Error('Not allowed by CORS'));
+                    callback(new Error("Not allowed by CORS"));
                 }
             },
-            methods: ["GET", "POST", "PUT", "DELETE"],
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allowedHeaders: ["Content-Type", "Authorization"],
             credentials: true,
         })
     );
+
+    // ✅ Explicitly handle preflight requests
+    app.options("*", cors());
 
     app.get("/", (req, res) => {
         res.json({
@@ -64,7 +67,7 @@ if (cluster.isPrimary) {
     app.post("/api/v1/content", userMiddleware, PostContent);
     app.get("/api/v1/content", userMiddleware, GetContent);
     app.put("/api/v1/content", userMiddleware, PutContent);
-    app.delete("/api/v1/content", userMiddleware, DeleteContent)
+    app.delete("/api/v1/content", userMiddleware, DeleteContent);
     app.post("/api/v1/brain/share", userMiddleware, PostShareBrain);
     app.get("/api/v1/brain/:shareLink", GetShareBrain);
 
