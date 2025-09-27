@@ -53,7 +53,7 @@ const Signup = () => {
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/signup`, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/v1/signup`, {
         username: data.username,
         password: data.password,
       });

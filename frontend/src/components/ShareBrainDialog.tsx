@@ -23,7 +23,7 @@ const ShareBrainDialog: React.FC<ShareBrainDialogProps> = ({ onClose }) => {
   useEffect(() => {
     const checkSharingStatus = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/brain/share`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/v1/brain/share`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -44,7 +44,7 @@ const ShareBrainDialog: React.FC<ShareBrainDialogProps> = ({ onClose }) => {
     setIsGenerating(true);
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/brain/share`,
+        `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/v1/brain/share`,
         { share: true },
         {
           headers: {
@@ -69,7 +69,7 @@ const ShareBrainDialog: React.FC<ShareBrainDialogProps> = ({ onClose }) => {
   const disableSharing = async () => {
     try {
       await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/brain/share`,
+        `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/v1/brain/share`,
         { share: false },
         {
           headers: {

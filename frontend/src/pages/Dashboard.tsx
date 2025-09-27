@@ -39,7 +39,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/content`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/v1/content`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -136,7 +136,7 @@ const Dashboard = () => {
     }
 
     try {
-      await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/v1/content`, {
+      await axios.delete(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/v1/content`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         },
@@ -156,7 +156,7 @@ const Dashboard = () => {
   const handleContentAdded = async (newContent: Omit<Content, "_id">) => {
     try {
       console.log('Adding new content:', newContent);
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/content`, newContent, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/v1/content`, newContent, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }

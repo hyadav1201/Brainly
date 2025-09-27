@@ -44,7 +44,7 @@ const Signin = () => {
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/signin`, data);
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/v1/signin`, data);
 
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);

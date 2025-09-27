@@ -38,7 +38,7 @@ export default function ShareBrain() {
       }
 
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/brain/${shareLink}`);
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/v1/brain/${shareLink}`);
         console.log('Fetched shared brain:', response.data);
         setSharedBrain(response.data);
         toast.success("Shared brain loaded successfully");

@@ -1,7 +1,6 @@
 import { toast } from 'sonner';
 import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/api/v1';
+import { API_BASE_URL } from '@/config/env';
 
 // Create axios instance with default config
 const axiosInstance = axios.create({

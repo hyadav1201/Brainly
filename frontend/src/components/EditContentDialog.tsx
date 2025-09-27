@@ -104,7 +104,7 @@ export default function EditContentDialog({ content, onClose, onContentUpdated }
             }
 
             const response = await axios.put(
-                `${import.meta.env.VITE_BACKEND_URL}/api/v1/content`,
+                `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/v1/content`,
                 {
                     contentId: content._id,
                     type: content.type,
