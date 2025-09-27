@@ -1,25 +1,33 @@
 import mongoose, { model, Schema } from "mongoose";
 import dotenv from 'dotenv';
 
-
 dotenv.config();
 
-
-
-
-try {
-    mongoose.connect(process.env.MONGO_URL as string);
-} catch (e) {
-    console.error("Failed to connect to MongoDB:", e);
+async function connectToDatabase() {
+    try {
+        await mongoose.connect(process.env.MONGO_URL as string);
+        console.log("Connected to MongoDB");
+        
+        // Try to drop the problematic email index if it exists
+        try {
+            if (mongoose.connection.db) {
+                await mongoose.connection.db.collection('users').dropIndex('email_1');
+                console.log("Dropped old email index");
+            }
+        } catch (indexError) {
+            // Index might not exist, which is fine
+            console.log("Email index not found or already dropped");
+        }
+    } catch (e) {
+        console.error("Failed to connect to MongoDB:", e);
+    }
 }
+
+connectToDatabase();
 
 const UserSchema = new Schema({
     username: { type: String, unique: true },
-    password: String,
-    email: { type: String, sparse: true, unique: true }
-}, {
-    // Disable automatic index creation to avoid conflicts with existing indexes
-    autoIndex: false
+    password: String
 })
 
 export const UserModel = model("User", UserSchema);
