@@ -31,6 +31,7 @@ if (cluster.isPrimary) {
         cors({
             origin: [
                 "https://brainly-seven-iota.vercel.app",
+                "https://brainly-juji731xc-bytewizard12s-projects.vercel.app",
                 "http://localhost:5173",
                 "http://localhost:3000"
             ],
