@@ -36,30 +36,32 @@ if (cluster.isPrimary) {
 } else {
   const app = express();
 
-  // ✅ Apply CORS before JSON body parser
   const corsOptions = {
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      if (!origin) return callback(null, true); // allow Postman / curl
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow Postman, curl, or requests with no origin
+    if (!origin) return callback(null, true);
 
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app") // allow all Vercel preview domains
-      ) {
-        callback(null, true);
-      } else {
-        console.warn(`❌ CORS blocked request from: ${origin}`);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  };
+    if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+      callback(null, true);
+    } else {
+      console.warn(`❌ CORS blocked request from: ${origin}`);
+      callback(null, false); // use false instead of throwing error
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
 
-  app.use(cors(corsOptions));
-  app.options("*", cors(corsOptions)); // Preflight
-  app.use(express.json());
+// Apply CORS **before all routes**
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Enable preflight for all routes
 
+// Global error handler
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err);
+  res.status(500).json({ error: err.message });
+});
   // Routes
   app.get("/", (req, res) => {
     res.json({ message: `Brainly backend process: ${process.pid}` });
