@@ -29,7 +29,11 @@ if (cluster.isPrimary) {
     app.use(express.json());
     app.use(
         cors({
-            origin: ["https://app-brainly.vercel.app/"],
+            origin: [
+                "https://brainly-seven-iota.vercel.app",
+                "http://localhost:5173",
+                "http://localhost:3000"
+            ],
             methods: ["GET", "POST", "PUT", "DELETE"],
             credentials: true,
         })
