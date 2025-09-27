@@ -29,12 +29,25 @@ if (cluster.isPrimary) {
     app.use(express.json());
     app.use(
         cors({
-            origin: [
-                "https://brainly-seven-iota.vercel.app",
-                "https://brainly-juji731xc-bytewizard12s-projects.vercel.app",
-                "http://localhost:5173",
-                "http://localhost:3000"
-            ],
+            origin: (origin, callback) => {
+                // Allow requests with no origin (mobile apps, postman, etc.)
+                if (!origin) return callback(null, true);
+                
+                // List of allowed origins
+                const allowedOrigins = [
+                    "https://brainly-seven-iota.vercel.app",
+                    "https://brainly-juji731xc-bytewizard12s-projects.vercel.app",
+                    "http://localhost:5173",
+                    "http://localhost:3000"
+                ];
+                
+                // Check if origin is in allowed list or is a vercel.app subdomain
+                if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+                    callback(null, true);
+                } else {
+                    callback(new Error('Not allowed by CORS'));
+                }
+            },
             methods: ["GET", "POST", "PUT", "DELETE"],
             credentials: true,
         })
