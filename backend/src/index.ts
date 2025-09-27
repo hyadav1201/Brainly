@@ -14,75 +14,67 @@ import { GetShareBrain, PostShareBrain } from "./routes/brain";
 
 const numCPUs = os.cpus().length;
 
+// Allowed origins
 const allowedOrigins = [
-    "https://brainly-seven-iota.vercel.app",
-    "https://brainly-juji731xc-bytewizard12s-projects.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000"
+  "https://brainly-seven-iota.vercel.app",
+  "https://brainly-juji731xc-bytewizard12s-projects.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000"
 ];
 
-function corsOrigin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    if (!origin) return callback(null, true); // allow server-to-server, mobile, Postman
-    if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
-        callback(null, true);
-    } else {
-        callback(new Error("Not allowed by CORS"));
-    }
-}
-
 if (cluster.isPrimary) {
-    console.log(`Primary process ${process.pid} is running`);
-    for (let i = 0; i < numCPUs; i++) {
-        cluster.fork();
-    }
-    cluster.on('exit', (worker, code, signal) => {
-        console.log(`Worker ${worker.process.pid} died. Spawning a new one...`);
-        cluster.fork();
-    });
+  console.log(`Primary process ${process.pid} is running`);
+
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`Worker ${worker.process.pid} died. Spawning a new one...`);
+    cluster.fork();
+  });
+
 } else {
-    const app = express();
-    app.use(express.json());
+  const app = express();
+  app.use(express.json());
 
-    // CORS middleware (with credentials and dynamic origin)
-    app.use(cors({
-        origin: corsOrigin,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
-    }));
+  // ✅ Dynamic CORS (supports array + *.vercel.app)
+  const corsOptions = {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      if (!origin) return callback(null, true); // allow Postman / curl
 
-    // Explicit preflight OPTIONS handler for every route
-    app.options("*", cors({
-        origin: corsOrigin,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
-    }));
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app") // allow all Vercel preview domains
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  };
 
-    app.get("/", (req, res) => {
-        res.json({
-            message: `Brainly backend process: ${process.pid}`
-        });
-    });
+  app.use(cors(corsOptions));
+  app.options("*", cors(corsOptions)); // Preflight
 
-    app.post("/api/v1/signup", Signup);
-    app.post("/api/v1/signin", Signin);
-    app.post("/api/v1/content", userMiddleware, PostContent);
-    app.get("/api/v1/content", userMiddleware, GetContent);
-    app.put("/api/v1/content", userMiddleware, PutContent);
-    app.delete("/api/v1/content", userMiddleware, DeleteContent);
-    app.post("/api/v1/brain/share", userMiddleware, PostShareBrain);
-    app.get("/api/v1/brain/:shareLink", GetShareBrain);
+  // Routes
+  app.get("/", (req, res) => {
+    res.json({ message: `Brainly backend process: ${process.pid}` });
+  });
 
-    // Optional: generic error handler for CORS errors
-    // app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
-    //     if (err.message && err.message.includes("CORS")) {
-    //         return res.status(403).json({ error: "CORS error: Origin not allowed" });
-    //     }
-    //     next(err);
-    // });
+  app.post("/api/v1/signup", Signup);
+  app.post("/api/v1/signin", Signin);
+  app.post("/api/v1/content", userMiddleware, PostContent);
+  app.get("/api/v1/content", userMiddleware, GetContent);
+  app.put("/api/v1/content", userMiddleware, PutContent);
+  app.delete("/api/v1/content", userMiddleware, DeleteContent);
+  app.post("/api/v1/brain/share", userMiddleware, PostShareBrain);
+  app.get("/api/v1/brain/:shareLink", GetShareBrain);
 
-    app.listen(3000, () => {
-        console.log(`Worker ${process.pid} started and listening on port 3000`);
-    });
+  app.listen(3000, () => {
+    console.log(`Worker ${process.pid} started and listening on port 3000`);
+  });
 }
