@@ -15,7 +15,11 @@ try {
 
 const UserSchema = new Schema({
     username: { type: String, unique: true },
-    password: String
+    password: String,
+    email: { type: String, sparse: true, unique: true }
+}, {
+    // Disable automatic index creation to avoid conflicts with existing indexes
+    autoIndex: false
 })
 
 export const UserModel = model("User", UserSchema);
